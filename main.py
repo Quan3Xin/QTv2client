@@ -1,14 +1,13 @@
 # -*- coding:utf-8 -*-
-import sys, os, multiprocessing, threading, subprocess, signal
+import sys, os, multiprocessing, subprocess, signal
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QMessageBox, QSystemTrayIcon, QMenu, qApp, QAction, QDesktopWidget, QWidget
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import *
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QVBoxLayout
-from PyQt5.QtWidgets import QWidget
 
-from PyQt5.QtCore import (QCoreApplication, QObject, QRunnable, QThread,
-                          QThreadPool, pyqtSignal)
+from PyQt5 import QtCore
+from PyQt5.QtCore import QThread
 
 
 class Thread(QThread):
@@ -46,7 +45,7 @@ class SystemTray(object):
     def initUI(self):
         # 设置托盘图标
 
-        self.tp.setIcon(QIcon('icon.ico'))
+        self.tp.setIcon(QIcon('icons.ico'))
 
     def quitApp(self):
         # 退出程序
@@ -100,7 +99,7 @@ class SystemTray(object):
         sys.exit(self.app.exec_())  # 持续对app的连接
 
 
-class Window(QWidget):
+class Window(QDockWidget):
     # 主窗口类
     def __init__(self):
         # move()方法移动了窗口到屏幕坐标x=300, y=300的位置.
@@ -109,19 +108,29 @@ class Window(QWidget):
         self.initUI()
 
     def initUI(self):
+
+        self.setWindowFlags(QtCore.Qt.WindowTitleHint
+                            | QtCore.Qt.WindowSystemMenuHint
+                            | QtCore.Qt.MacWindowToolBarButtonHint
+                            | QtCore.Qt.CustomizeWindowHint
+                            | QtCore.Qt.FramelessWindowHint)
+
+        self.removeDockWidget()
+        self.show()
         # 主窗口布局实现略。。。
-        self.setWindowTitle('coggom')  # 设置标题
-        self.setWindowIcon(QIcon('./demo2.ico'))  # 设置标题图标
-        self.resize(240, 240)  # 设置窗体大小
-        self.setFixedSize(self.width(), self.height())  # 固定窗口大小
-        self.center()  # 窗体屏幕居中显示
 
-        self.layout = QVBoxLayout()
+        # self.setWindowTitle('coggom')  # 设置标题
+        # self.setWindowIcon(QIcon('icons.ico'))  # 设置标题图标
+        # self.resize(240, 240)  # 设置窗体大小
+        # self.setFixedSize(self.width(), self.height())  # 固定窗口大小
+        # self.center()  # 窗体屏幕居中显示
 
-        self.label = QLabel("Coggom the world ")
+        # self.layout = QVBoxLayout()
 
-        self.layout.addWidget(self.label)
-        self.setLayout(self.layout)
+        # self.label = QLabel("Coggom the world ")
+
+        # self.layout.addWidget(self.label)
+        # self.setLayout(self.layout)
         self.tray()  # 程序实现托盘
 
     def tray(self):
@@ -144,7 +153,10 @@ def kill_v2ray_process(name="v2ray"):
                              stdout=subprocess.PIPE,
                              shell=False)
     if child.communicate()[0]:
-        pid = int(child.communicate()[0])
+        pid = int(
+            subprocess.Popen(["pgrep", "-f", name],
+                             stdout=subprocess.PIPE,
+                             shell=False).communicate()[0])
         os.kill(pid, signal.SIGKILL)
 
 
@@ -153,5 +165,10 @@ if __name__ == "__main__":
     os.chdir("/Applications/coggom.app/Contents/Resources")
     kill_v2ray_process()
     app = QApplication(sys.argv)
-    win = Window()
+    # win = Window()
+    w = Window()
+    # QMainWindow.removeDockWidget(w)
+
+    # w.close()
+    # SystemTray(w)
     sys.exit(app.exec_())
